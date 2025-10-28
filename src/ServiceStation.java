@@ -6,6 +6,7 @@ public class ServiceStation {
     private final Semaphore empty;
     private final Semaphore full;
     private final Semaphore mutex;
+    // the mutex is for preventing that more than one car enters the queue at the same time
     private final Semaphore bays;
     private final Object bayLock = new Object();
     private final boolean[] bayOccupied;
@@ -38,16 +39,17 @@ public class ServiceStation {
     public void enqueue(Car car) {
         try {
             boolean hadToWait = false;
-            if (empty.getValue() == 0) hadToWait = true;
+            if (bays.getValue() == 0) hadToWait = true;
 
             empty.acquire();
             mutex.acquire();
+            //to prevent more than one car to enter the queue at the same time
             queue.addLast(car);
 
             if (hadToWait)
                 log("• " + car.name + " arrived and waiting");
             else
-                log("• " + car.name + " entered the queue");
+                log("• " + car.name + " entered the queue" );
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } finally {
@@ -96,7 +98,7 @@ public class ServiceStation {
     public static void main(String[] args) throws InterruptedException {
         int waitingCapacity = 5;
         int pumps = 3;
-        List<String> carNames = Arrays.asList("C1", "C2", "C3", "C4", "C5");
+        List<String> carNames = Arrays.asList("C1", "C2", "C3", "C4", "C5", "C6", "C7");
 
         ServiceStation station = new ServiceStation(waitingCapacity, pumps, carNames.size());
         station.startPumps();

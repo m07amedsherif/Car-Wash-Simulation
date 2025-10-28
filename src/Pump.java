@@ -13,13 +13,16 @@ public class Pump extends Thread {
     public void run() {
         try {
             while (true) {
+                // this condition is to prevent the infinity loop
                 synchronized (station.countLock) {
                     if (station.totalCarsProcessed >= station.totalCars)
                         break; // all cars processed
                 }
 
+                // remove  car
                 Car car = station.dequeue();
 
+                //checks again after removing a car from the queue
                 synchronized (station.countLock) {
                     if (station.totalCarsProcessed >= station.totalCars)
                         break;
